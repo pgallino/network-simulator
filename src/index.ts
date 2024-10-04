@@ -1,51 +1,66 @@
-import { Application, Sprite, Assets, Graphics, GraphicsContext, FederatedPointerEvent } from 'pixi.js';
-import Bunny from './bunny.png';
+import { Application, Sprite, Assets, Graphics, GraphicsContext, FederatedPointerEvent, Ticker } from 'pixi.js';
 import './style.css';
 
+// Clase para el nodo que se mueve
+class MovingSquare {
+    private square: Graphics;
+    private lineStart: { x: number, y: number };
+    private lineEnd: { x: number, y: number };
+    private progress: number; // Para controlar la posición
+    private speed: number;
+
+    constructor(lineStart: { x: number, y: number }, lineEnd: { x: number, y: number }, speed: number) {
+        this.lineStart = lineStart;
+        this.lineEnd = lineEnd;
+        this.speed = speed;
+        this.progress = 0; // Comienza en el inicio
+
+        // Crea el cuadrado azul
+        this.square = new Graphics()
+            .beginFill(0x0000ff) // Color azul
+            .drawRect(-5, -5, 10, 10) // Cuadrado de 10x10
+            .endFill();
+
+        // Posiciona el cuadrado en el punto de inicio
+        this.updatePosition();
+    }
+
+    public getSquare(): Graphics {
+        return this.square;
+    }
+
+    public updatePosition() {
+        // Calcular la posición actual del cuadrado
+        this.square.x = this.lineStart.x + (this.lineEnd.x - this.lineStart.x) * this.progress;
+        this.square.y = this.lineStart.y + (this.lineEnd.y - this.lineStart.y) * this.progress;
+    }
+
+    public move(delta: number) {
+        // Actualizar la posición del cuadrado
+        this.progress += this.speed * delta;
+        // Invertir la dirección al llegar al final o al inicio
+        if (this.progress >= 1) {
+            this.progress = 1;
+            this.speed = -Math.abs(this.speed); // Cambia a negativo
+        } else if (this.progress <= 0) {
+            this.progress = 0;
+            this.speed = Math.abs(this.speed); // Cambia a positivo
+        }
+        this.updatePosition();
+    }
+
+    public setSpeed(speed: number) {
+        this.speed = speed;
+    }
+}
 
 // IIFE to avoid errors
 (async () => {
-    const button = document.createElement("button");
-    button.textContent = "Open file";
-    let fileContent = null;
-
-    const input = document.createElement('input');
-    input.type = 'file';
-
-    button.onclick = () => {
-        input.click();
-    }
-    document.body.appendChild(button);
-
-    // The application will create a renderer using WebGL, if possible,
-    // with a fallback to a canvas render. It will also setup the ticker
-    // and the root stage PIXI.Container
     const app = new Application();
 
-    // Wait for the Renderer to be available
     await app.init({ width: window.innerWidth, height: window.innerHeight, resolution: devicePixelRatio });
 
-    // The application will create a canvas element for you that you
-    // can then insert into the DOM
     document.body.appendChild(app.canvas);
-
-    await Assets.load(Bunny);
-
-    const bunny = Sprite.from(Bunny);
-
-    const resizeBunny = () => {
-        // Setup the position of the bunny
-        bunny.x = app.renderer.width / 5;
-        bunny.y = app.renderer.height / 5;
-        bunny.width = app.renderer.width / 5;
-        bunny.height = app.renderer.height / 5;
-    }
-
-    resizeBunny();
-
-    // Rotate around the center
-    bunny.anchor.x = 0.5;
-    bunny.anchor.y = 0.5;
 
     let rect = new Graphics()
         .rect(0, 0, app.renderer.width, app.renderer.height)
@@ -56,13 +71,12 @@ import './style.css';
         rect.height = app.renderer.height;
     }
 
-    // Add the objects to the scene we are building
     app.stage.addChild(rect);
-    app.stage.addChild(bunny);
 
     const circleContext = new GraphicsContext().circle(0, 0, 10).fill(0xff0000);
 
     let lineStart: { x: number, y: number } = null;
+    const movingSquares: MovingSquare[] = []; // Array para almacenar los cuadrados en movimiento
 
     const circleOnClick = (e: FederatedPointerEvent, circle: Graphics) => {
         console.log("clicked on circle", e);
@@ -78,6 +92,18 @@ import './style.css';
                 .lineTo(circle.x, circle.y)
                 .stroke({ width: 2, color: 0 });
             rect.addChildAt(line, 0);
+
+            // Calcular el punto medio
+            const midPoint = {
+                x: (lineStart.x + circle.x) / 2,
+                y: (lineStart.y + circle.y) / 2
+            };
+
+            // Crear un cuadrado azul que se moverá entre los puntos
+            const movingSquare = new MovingSquare(lineStart, { x: circle.x, y: circle.y }, 0.01); // Velocidad ajustable
+            movingSquares.push(movingSquare); // Agregar a la lista de cuadrados
+            rect.addChild(movingSquare.getSquare()); // Añadir el cuadrado al escenario
+
             lineStart = null;
         }
     };
@@ -96,35 +122,36 @@ import './style.css';
 
     rect.eventMode = 'static';
 
-    // Listen for frame updates
-    app.ticker.add(() => {
-        // each frame we spin the bunny around a bit
-        bunny.rotation += 0.005;
+    let isPaused = false; // Estado de pausa
+
+    // Crear el botón de pausa
+    const pauseButton = document.createElement('button');
+    pauseButton.innerText = 'Pausar';
+    pauseButton.style.position = 'absolute';
+    pauseButton.style.top = '10px';
+    pauseButton.style.left = '10px';
+    pauseButton.style.zIndex = '100'; // Asegura que el botón esté en la parte superior
+    document.body.appendChild(pauseButton);
+
+    pauseButton.onclick = () => {
+        isPaused = !isPaused;
+        pauseButton.innerText = isPaused ? 'Reanudar' : 'Pausar';
+    };
+
+    // Usar el ticker para animar los cuadrados
+    app.ticker.add((ticker: Ticker) => {
+        const delta = ticker.deltaTime;
+        if (!isPaused) { // Solo mover si no está en pausa
+            for (const square of movingSquares) {
+                square.move(delta);
+            }
+        }
     });
 
     function resize() {
-        // Resize the renderer
         app.renderer.resize(window.innerWidth, window.innerHeight);
-
-        resizeBunny();
         resizeRect();
     }
 
     window.addEventListener('resize', resize);
-
-    input.onchange = () => {
-        const file = input.files[0];
-
-        console.log(file);
-        // setting up the reader
-        const reader = new FileReader();
-        reader.readAsDataURL(file); // this is reading as data url
-
-        // here we tell the reader what to do when it's done reading...
-        reader.onload = async (readerEvent) => {
-            fileContent = readerEvent.target.result; // this is the content!
-            const txt = await Assets.load(fileContent);
-            bunny.texture = txt;
-        }
-    }
 })();
