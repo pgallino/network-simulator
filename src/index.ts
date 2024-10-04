@@ -17,9 +17,9 @@ class MovingSquare {
 
         // Crea el cuadrado azul
         this.square = new Graphics()
-            .beginFill(0x0000ff) // Color azul
-            .drawRect(-5, -5, 10, 10) // Cuadrado de 10x10
-            .endFill();
+            .fill(0x0000ff) // Color azul
+            .rect(-5, -5, 10, 10) // Cuadrado de 10x10
+            .fill();
 
         // Posiciona el cuadrado en el punto de inicio
         this.updatePosition();
@@ -168,7 +168,7 @@ class MovingSquare {
 
             if (squareIndex !== -1) {
                 let tooltip = new Graphics();
-                tooltip.beginFill(0xffffff); // Fondo blanco
+                tooltip.fill(0xffffff); // Fondo blanco
 
                 // Obtener el texto y su tamaño
                 const text = `Soy el paquete número: ${squareIndex + 1}`;
@@ -176,9 +176,9 @@ class MovingSquare {
                 const label = new Text(text, style);
 
                 // Calcular el tamaño del tooltip basado en el texto
-                tooltip.drawRect(0, 0, label.width + 20, label.height + 20); // Agregar margen al tamaño
+                tooltip.rect(0, 0, label.width + 20, label.height + 20); // Agregar margen al tamaño
 
-                tooltip.endFill();
+                tooltip.fill();
                 tooltip.x = x + 10; // Posicionar tooltip
                 tooltip.y = y + 10; // Posicionar tooltip
 
