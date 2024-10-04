@@ -1,4 +1,4 @@
-import { Application, Sprite, Assets, Graphics, GraphicsContext, FederatedPointerEvent, Ticker } from 'pixi.js';
+import { Application, TextStyle, Rectangle, Text, Graphics, GraphicsContext, FederatedPointerEvent, Ticker } from 'pixi.js';
 import './style.css';
 
 // Clase para el nodo que se mueve
@@ -77,6 +77,9 @@ class MovingSquare {
 
     let lineStart: { x: number, y: number } = null;
     const movingSquares: MovingSquare[] = []; // Array para almacenar los cuadrados en movimiento
+    let squareCount = 0; // Contador de cuadrados
+
+    const tooltips: Graphics[] = []; // Almacenar los tooltips
 
     const circleOnClick = (e: FederatedPointerEvent, circle: Graphics) => {
         console.log("clicked on circle", e);
@@ -93,16 +96,13 @@ class MovingSquare {
                 .stroke({ width: 2, color: 0 });
             rect.addChildAt(line, 0);
 
-            // Calcular el punto medio
-            const midPoint = {
-                x: (lineStart.x + circle.x) / 2,
-                y: (lineStart.y + circle.y) / 2
-            };
-
             // Crear un cuadrado azul que se moverá entre los puntos
             const movingSquare = new MovingSquare(lineStart, { x: circle.x, y: circle.y }, 0.01); // Velocidad ajustable
             movingSquares.push(movingSquare); // Agregar a la lista de cuadrados
             rect.addChild(movingSquare.getSquare()); // Añadir el cuadrado al escenario
+
+            // Incrementar el contador de cuadrados
+            squareCount++;
 
             lineStart = null;
         }
@@ -136,6 +136,7 @@ class MovingSquare {
     pauseButton.onclick = () => {
         isPaused = !isPaused;
         pauseButton.innerText = isPaused ? 'Reanudar' : 'Pausar';
+        tooltips.forEach(tooltip => tooltip.visible = false); // Ocultar tooltips al pausar
     };
 
     // Usar el ticker para animar los cuadrados
@@ -144,6 +145,53 @@ class MovingSquare {
         if (!isPaused) { // Solo mover si no está en pausa
             for (const square of movingSquares) {
                 square.move(delta);
+            }
+        }
+    });
+
+    // Evento de hover para mostrar información
+    app.stage.interactive = true;
+    app.stage.on('pointermove', (event) => {
+        if (isPaused) {
+            const { x, y } = event.global;
+
+            // Ocultar todos los tooltips primero
+            tooltips.forEach(tooltip => tooltip.visible = false);
+
+            // Mostrar texto en el tooltip
+            const squareIndex = movingSquares.findIndex(square => {
+                const squareGraphics = square.getSquare();
+                const squareBounds = squareGraphics.getBounds(); // Obtener los límites del cuadrado
+                const rect = new Rectangle(squareBounds.x, squareBounds.y, squareBounds.width, squareBounds.height);
+                return rect.contains(event.global.x, event.global.y); // Comprobar si el puntero está dentro
+            });
+
+            if (squareIndex !== -1) {
+                let tooltip = new Graphics();
+                tooltip.beginFill(0xffffff); // Fondo blanco
+
+                // Obtener el texto y su tamaño
+                const text = `Soy el paquete número: ${squareIndex + 1}`;
+                const style = new TextStyle({ fill: '#000000', fontSize: 16 });
+                const label = new Text(text, style);
+
+                // Calcular el tamaño del tooltip basado en el texto
+                tooltip.drawRect(0, 0, label.width + 20, label.height + 20); // Agregar margen al tamaño
+
+                tooltip.endFill();
+                tooltip.x = x + 10; // Posicionar tooltip
+                tooltip.y = y + 10; // Posicionar tooltip
+
+                // Agregar texto al tooltip
+                label.x = 10; // Margen del texto
+                label.y = 10; // Margen del texto
+                tooltip.addChild(label);
+
+                // Agregar tooltip al escenario
+                app.stage.addChild(tooltip);
+                tooltips.push(tooltip); // Agregar a la lista de tooltips
+
+                tooltip.visible = true;
             }
         }
     });
