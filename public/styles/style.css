@@ -1,0 +1,103 @@
+/* Reset básico */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #f5f5f5;
+}
+
+/* Contenedor principal que organiza las dos barras y el contenido central */
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Barra lateral izquierda */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    width: 60px;
+    background-color: #333;
+}
+
+/* Botones de la barra lateral izquierda */
+.icon-button {
+    background-color: #fff;
+    border: none;
+    padding: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Contenedor del canvas */
+.canvas-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background-color: #e3e2e1;
+}
+
+/* Estilo para el canvas */
+#canvas {
+    width: 100%;
+    height: 100%;
+}
+
+/* Barra lateral derecha */
+.right-bar {
+    width: 250px;
+    background-color: #f1f1f1;
+    padding: 20px;
+    box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+}
+   
+/* Menú desplegable sobre el canvas */
+.dropdown-menu {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    padding: 10px;
+    font-size: 14px;
+    z-index: 10;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .right-bar {
+        width: 100%;
+        height: auto;
+        position: static;
+        box-shadow: none;
+        padding: 10px;
+    }
+
+    .sidebar {
+        flex-direction: row;
+        width: 100%;
+        justify-content: space-around;
+    }
+}
