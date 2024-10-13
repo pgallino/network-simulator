@@ -5,16 +5,50 @@
     <title>
         <%= htmlWebpackPlugin.options.title %>
     </title>
+    <link rel="stylesheet" href="style.css"> <!-- Asegúrate de tener enlazado el CSS -->
 </head>
 
 <body>
     <div id="top-bar">
         <button id="open-file-button">Open file</button>
     </div>
+    
     <div id="bottom-screen" class="row container">
-        <div id="left-bar" class="sidebar"> </div>
-        <canvas id="canvas"> </canvas>
-        <div id="right-bar" class="sidebar"> </div>
+        <div id="left-bar" class="sidebar">
+            <!-- Botón de modo navegar -->
+            <button id="navigate-button" class="icon-button" title="Modo Navegar">
+                <img id="navigate-button-img" alt="Click" class="icon-img"> <!-- La ruta se asigna dinámicamente en index.ts -->
+            </button>
+
+            <!-- Botón del Router -->
+            <button id="router-button" class="icon-button" title="Router">
+                <img id="router-button-img" alt="Router" class="icon-img"> <!-- La ruta se asigna dinámicamente en index.ts -->
+            </button>
+
+            <!-- Botón de la Conexión -->
+            <button id="connection-button" class="icon-button" title="Conexión">
+                <img id="connection-button-img" alt="Conexión" class="icon-img"> <!-- La ruta se asigna dinámicamente en index.ts -->
+            </button>
+        </div>
+
+        <div class="canvas-container" style="position: relative;">
+            <canvas id="canvas"></canvas> <!-- Canvas ocupa el espacio principal -->
+
+            <!-- Menú desplegable sobre el canvas -->
+            <select id="layer-select" class="dropdown-menu">
+                <option value="application">Capa de Aplicación</option>
+                <option value="transport">Capa de Transporte</option>
+                <option value="network">Capa de Red</option>
+                <option value="link">Capa de Enlace</option>
+            </select>
+        </div>
+
+        <div id="right-bar" class="right-bar"> 
+            <h2>Información</h2>
+            <div id="info-content">
+                <!-- Información dinámica sobre el conejo y los routers se mostrará aquí -->
+            </div>
+        </div>
     </div>
 </body>
 

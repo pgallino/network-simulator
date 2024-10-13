@@ -2,14 +2,12 @@ import { Application, Sprite, Assets, Graphics, GraphicsContext, FederatedPointe
 import Bunny from './bunny.png';
 import RouterSvg from './router.svg';
 import ConnectionSvg from './connection.svg';
+import Click from './click.png'
 import './style.css';
 
-
-// IIFE to avoid errors
 (async () => {
+    let mode = "navigate"; // El modo por defecto será "navegar"
     const leftBarWidth = 50;
-    let mode = "router";
-    // const topBar = document.getElementById("top-bar");
     const button = document.getElementById("open-file-button");
     let fileContent = null;
 
@@ -23,51 +21,31 @@ import './style.css';
     const bottomScreen = document.getElementById("bottom-screen");
     const leftBar = document.getElementById("left-bar");
     const canvas = document.getElementById("canvas");
+    const infoContent = document.getElementById("info-content");
+    const layerSelect = document.getElementById("layer-select") as HTMLSelectElement | null;
     leftBar.style.width = `${leftBarWidth}px`;
 
-    const routerButton = document.createElement("button");
-    routerButton.onclick = () => {
-        mode = "router";
-    }
-    leftBar.appendChild(routerButton);
+    // Asignar imágenes dinámicamente a los botones
+    const navigateButtonImg = document.getElementById("navigate-button-img") as HTMLImageElement;
+    const routerButtonImg = document.getElementById("router-button-img") as HTMLImageElement;
+    const connectionButtonImg = document.getElementById("connection-button-img") as HTMLImageElement;
 
-    const routerImg = document.createElement("img");
-    routerImg.src = RouterSvg;
-    routerImg.style.minWidth = "32px";
-    routerImg.style.height = "32px";
-    routerButton.appendChild(routerImg);
+    if (navigateButtonImg) navigateButtonImg.src = Click;
+    if (routerButtonImg) routerButtonImg.src = RouterSvg;
+    if (connectionButtonImg) connectionButtonImg.src = ConnectionSvg;
 
-    const connectionButton = document.createElement("button");
-    connectionButton.onclick = () => {
-        mode = "connection";
-    }
-    leftBar.appendChild(connectionButton);
-
-    const connectionImg = document.createElement("img");
-    connectionImg.src = ConnectionSvg;
-    connectionImg.style.minWidth = "32px";
-    connectionImg.style.height = "32px";
-    connectionButton.appendChild(connectionImg);
-
-    // The application will create a renderer using WebGL, if possible,
-    // with a fallback to a canvas render. It will also setup the ticker
-    // and the root stage PIXI.Container
+    // PIXI.js setup
     const app = new Application();
 
-    // Wait for the Renderer to be available
     await app.init();
 
-    // The application will create a canvas element for you that you
-    // can then insert into the DOM
     canvas.replaceWith(app.canvas);
     app.canvas.style.float = "left";
 
     await Assets.load(Bunny);
-
     const bunny = Sprite.from(Bunny);
 
     const resizeBunny = () => {
-        // Setup the position of the bunny
         bunny.x = app.renderer.width / 5;
         bunny.y = app.renderer.height / 5;
         bunny.width = app.renderer.width / 5;
@@ -76,7 +54,6 @@ import './style.css';
 
     resizeBunny();
 
-    // Rotate around the center
     bunny.anchor.x = 0.5;
     bunny.anchor.y = 0.5;
 
@@ -89,9 +66,21 @@ import './style.css';
         rect.height = app.renderer.height;
     }
 
-    // Add the objects to the scene we are building
     app.stage.addChild(rect);
     app.stage.addChild(bunny);
+
+    // Evento de clic en el conejo
+    bunny.eventMode = 'static';
+    bunny.on('click', () => {
+        if (infoContent) {
+            infoContent.innerHTML = `
+                <h3>Bunny Information</h3>
+                <p>Este es un adorable conejo blanco. Es conocido por ser un animal muy tranquilo, amigable, y su pelaje es muy suave.</p>
+            `;
+        }
+    });
+
+    let routers = [];
 
     const circleContext = new GraphicsContext().circle(0, 0, 10).fill(0xff0000);
 
@@ -115,26 +104,43 @@ import './style.css';
         }
     };
 
-    rect.on('click', (e) => {
-        if (mode != "router") {
-            return;
+    const showRouterInfo = (routerInfo: { id: any; x: any; y: any; status: any; connections: any; }) => {
+        if (infoContent) {
+            infoContent.innerHTML = `
+                <h3>Router Information</h3>
+                <p>Router ID: ${routerInfo.id}</p>
+                <p>Location: (${routerInfo.x}, ${routerInfo.y})</p>
+                <p>Status: ${routerInfo.status}</p>
+                <p>Connections: ${routerInfo.connections}</p>
+            `;
         }
-        console.log("clicked on rect", e);
+    };
+
+    rect.on('click', (e) => {
+        if (mode != "router") return;
         if (!e.altKey) {
             const circle = new Graphics(circleContext);
             circle.x = e.globalX;
             circle.y = e.globalY;
+
+            const routerInfo = {
+                id: routers.length + 1,
+                x: circle.x,
+                y: circle.y,
+                status: 'active',
+                connections: Math.floor(Math.random() * 10)
+            };
+
+            routers.push(routerInfo);
             rect.addChild(circle);
-            circle.on('click', (e) => circleOnClick(e, circle));
+            circle.on('click', () => showRouterInfo(routerInfo));
             circle.eventMode = 'static';
         }
     });
 
     rect.eventMode = 'static';
 
-    // Listen for frame updates
     app.ticker.add(() => {
-        // each frame we spin the bunny around a bit
         bunny.rotation += 0.005;
     });
 
@@ -148,17 +154,47 @@ import './style.css';
 
     input.onchange = () => {
         const file = input.files[0];
-
-        console.log(file);
-        // setting up the reader
         const reader = new FileReader();
-        reader.readAsDataURL(file); // this is reading as data url
+        reader.readAsDataURL(file);
 
-        // here we tell the reader what to do when it's done reading...
         reader.onload = async (readerEvent) => {
-            fileContent = readerEvent.target.result; // this is the content!
+            fileContent = readerEvent.target.result as string;
             const txt = await Assets.load(fileContent);
             bunny.texture = txt;
         }
     }
+
+    if (layerSelect) {
+        layerSelect.addEventListener('change', (e) => {
+            const selectedLayer = (e.target as HTMLSelectElement).value;
+            if (infoContent) {
+                infoContent.innerHTML = `
+                    <h3>Información de la Capa</h3>
+                    <p>Estás viendo la: ${selectedLayer}</p>
+                `;
+            }
+        });
+    }
+
+    if (navigateButtonImg) {
+        navigateButtonImg.onclick = () => {
+            mode = "navigate";
+            console.log("Modo: Navegar");
+        };
+    }
+    
+    if (routerButtonImg) {
+        routerButtonImg.onclick = () => {
+            mode = "router";
+            console.log("Modo: Router");
+        };
+    }
+    
+    if (connectionButtonImg) {
+        connectionButtonImg.onclick = () => {
+            mode = "connection";
+            console.log("Modo: Conexión");
+        };
+    }
+
 })();
