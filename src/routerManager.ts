@@ -1,6 +1,6 @@
 // routerManager.ts
 import { FederatedPointerEvent, Graphics } from 'pixi.js';
-import { getMode } from './utils';
+import { getMode, setMode } from './utils';
 
 export interface RouterInfo {
     id: number;
@@ -8,6 +8,7 @@ export interface RouterInfo {
     y: number;
     status: string;
     connections: number;
+    connectedTo: number[]; // Agrega para almacenar los IDs de routers conectados
 }
 
 export let routers: RouterInfo[] = [];
@@ -24,7 +25,7 @@ function isNearExistingRouter(x: number, y: number): boolean {
     });
 }
 
-export function addRouter(rect: Graphics, x: number, y: number): void {
+export function addRouter(rect: Graphics, x: number, y: number): RouterInfo {
 
     if (isNearExistingRouter(x, y)) {
         console.log("La posición está demasiado cerca de otro router.");
@@ -41,7 +42,8 @@ export function addRouter(rect: Graphics, x: number, y: number): void {
         x: circle.x,
         y: circle.y,
         status: 'active',
-        connections: 0
+        connections: 0,
+        connectedTo: []
     };
 
     routers.push(routerInfo);
@@ -49,6 +51,8 @@ export function addRouter(rect: Graphics, x: number, y: number): void {
     circle.eventMode = 'static';
 
     circle.on('click', (e) => handleRouterClick(e, routerInfo, rect));
+
+    return routerInfo
 
 }
 
@@ -87,6 +91,8 @@ function handleRouterClick(e: MouseEvent, router: RouterInfo, rect: Graphics) {
                 // Incrementar el número de conexiones en ambos routers
                 firstRouter.connections += 1;
                 router.connections += 1;
+                firstRouter.connectedTo.push(router.id); // Guarda la conexión
+                router.connectedTo.push(firstRouter.id);
                 showRouterInfo(router)
                 firstRouter = null;
             } else {
@@ -107,6 +113,38 @@ export function drawConnection(rect: Graphics, router1: RouterInfo, router2: Rou
     line.stroke({ width: 2, color: 0 });
     rect.addChildAt(line, 0);
     
+}
+
+export function saveRouters() {
+    const data = JSON.stringify(routers);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "routers.json";
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+export function loadRouters(data: string, rect: Graphics) {
+    const loadedRouters: RouterInfo[] = JSON.parse(data);
+
+    loadedRouters.forEach(routerInfo => {
+        setMode("router")
+        let router = addRouter(rect, routerInfo.x, routerInfo.y);
+
+        // Redibuja conexiones si existen
+        routerInfo.connectedTo.forEach(connectedId => {
+            const targetRouter = loadedRouters.find(r => r.id === connectedId);
+            if (targetRouter) {
+                setMode("connection")
+                drawConnection(rect, routerInfo, targetRouter);
+                router.connections += 1
+                router.connectedTo.push(targetRouter.id)
+            }
+        });
+    });
+    setMode("navigate")
 }
 
 

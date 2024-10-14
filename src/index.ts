@@ -5,19 +5,36 @@ import ConnectionSvg from './assets/connection.svg';
 import Click from './assets/click.png'
 import './style.css';
 import { setMode, getMode } from './utils';
-import { addRouter } from './routerManager';
+import { addRouter, saveRouters, loadRouters } from './routerManager';
 
 (async () => {
     const leftBarWidth = 50;
-    const button = document.getElementById("open-file-button");
+    const load_button = document.getElementById("load-button");
+    const save_Button = document.getElementById("save-button");
     let fileContent = null;
 
     const input = document.createElement('input');
     input.type = 'file';
 
-    button.onclick = () => {
+    load_button.onclick = () => {
         input.click();
-    }
+    };
+
+    input.onchange = () => {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.readAsText(file); // Cambia a readAsText para archivos JSON de texto
+    
+        reader.onload = (readerEvent) => {
+            const data = readerEvent.target.result as string;
+            loadRouters(data, rect);
+        };
+    };
+    
+
+    save_Button.onclick = () => {
+        saveRouters();
+    };
 
     const leftBar = document.getElementById("left-bar");
     const canvas = document.getElementById("canvas");
@@ -69,17 +86,6 @@ import { addRouter } from './routerManager';
 
 
     rect.eventMode = 'static';
-
-    input.onchange = () => {
-        const file = input.files[0];
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-
-        reader.onload = async (readerEvent) => {
-            fileContent = readerEvent.target.result as string;
-            const txt = await Assets.load(fileContent);
-        }
-    }
 
     if (layerSelect) {
         layerSelect.addEventListener('change', (e) => {
