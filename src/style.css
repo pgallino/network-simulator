@@ -6,13 +6,13 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #aaa; /* Color de fondo de la página */
+    background-color: #F2F2F2; /* Color de fondo de la página */
 }
 
 /* Barra superior que contiene el botón "Open file" y el título */
 #top-bar {
     padding: 5px; /* Espacio interno reducido */
-    background-color: #f1f1f1; /* Fondo de la barra superior */
+    background-color: #333333; /* Fondo de la barra superior en gris oscuro */
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Sombra debajo de la barra */
     display: flex; /* Flexbox para alinear el contenido */
     align-items: center; /* Centra el contenido verticalmente */
@@ -23,14 +23,13 @@ body {
 
 /* Título centrado dentro de la barra superior */
 #app-title {
-
     position: absolute; /* Posiciona el título en relación a la barra superior */
     left: 50%; /* Centra el título horizontalmente */
     transform: translateX(-50%); /* Ajusta el título para que esté centrado exactamente */
     margin: 0; /* Elimina márgenes por defecto */
     font-size: 25px; /* Ajusta el tamaño de fuente para mayor visibilidad */
     font-weight: bold; /* Hace el texto del título más grueso */
-    color: #000000; /* Color del texto */
+    color: #FFFFFF; /* Color del texto en blanco */
 }
 
 /* Ajuste del contenedor principal para empezar justo debajo de la barra superior */
@@ -62,7 +61,7 @@ canvas {
 .right-bar {
     width: 250px; /* Ancho fijo de la barra de información */
     height: 100vh; /* Ocupa toda la altura de la ventana */
-    background-color: #f1f1f1; /* Fondo para diferenciarla */
+    background-color: #FFFFFF; /* Fondo blanco para diferenciarla */
     box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.2); /* Sombra para resaltar */
     padding: 20px; /* Espacio interno para contenido */
 }
@@ -73,20 +72,20 @@ canvas {
     padding-bottom: 15px; /* Espacio inferior para separar el título del contenido */
     font-size: 22px; /* Ajusta el tamaño de fuente para mayor visibilidad */
     font-weight: bold; /* Hace el texto del título más grueso */
-    color: #000000; /* Color del texto */
+    color: #333333; /* Color del texto en gris oscuro */
 }
 
 .info-content {
     font-size: 15px; /* Ajusta el tamaño de fuente para mayor visibilidad */
     font-weight: bold; /* Hace el texto del título más grueso */
-    color: #000000; /* Color del texto */
+    color: #333333; /* Color del texto en gris oscuro */
 }
 
 /* Contenedor del canvas */
 .canvas-container {
     flex: 1; /* Ocupa el espacio restante en el layout */
     position: relative; /* Permite posicionar elementos de forma absoluta dentro de él */
-    background-color: #e3e2e1; /* Fondo para distinguirlo */
+    background-color: #E3E2E1; /* Fondo gris claro para distinguirlo */
 }
 
 /* Menú desplegable sobre el canvas */
@@ -97,8 +96,8 @@ canvas {
     padding: 5px; /* Espacio interno */
     font-size: 14px; /* Tamaño de fuente del menú */
     z-index: 10; /* Asegura que esté encima del canvas */
-    background-color: white; /* Fondo blanco */
-    border: 1px solid #ccc; /* Borde gris claro */
+    background-color: #FFFFFF; /* Fondo blanco */
+    border: 1px solid #CCCCCC; /* Borde gris claro */
 }
 
 /* Barra lateral izquierda que contiene los botones */
@@ -108,13 +107,13 @@ canvas {
     display: flex; /* Flexbox para organizar los botones */
     flex-direction: column; /* Alinea los botones en una columna */
     align-items: center; /* Centra los botones horizontalmente */
-    background-color: #f1f1f1; /* Fondo de la barra */
+    background-color: #F1F1F1; /* Fondo de la barra */
     box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.2); /* Sombra para resaltar */
 }
 
 /* Estilos para los botones de la barra lateral */
 .icon-button {
-    background-color: #fff; /* Fondo blanco del botón */
+    background-color: #FFFFFF; /* Fondo blanco del botón */
     border: none; /* Sin borde */
     padding: 10px; /* Espacio interno alrededor del icono */
     margin-bottom: 10px; /* Separación entre botones */
@@ -126,7 +125,13 @@ canvas {
 
 /* Efecto de hover para los botones */
 .icon-button:hover {
-    background-color: #f0f0f0; /* Fondo más claro al pasar el mouse */
+    background-color: #F0F0F0; /* Fondo más claro al pasar el mouse */
+}
+
+/* Efecto de selección para botones activos */
+.icon-button.active {
+    background-color: #007ACC; /* Fondo azul oscuro para el botón activo */
+    color: #FFFFFF; /* Color del icono activo en blanco */
 }
 
 /* Imágenes dentro de los botones de la barra lateral */
@@ -134,4 +139,34 @@ canvas {
     width: 100%; /* Ocupa todo el ancho del botón */
     height: 100%; /* Ocupa todo el alto del botón */
     object-fit: contain; /* Ajusta la imagen para no distorsionarla */
+}
+
+/* Estilos para el botón Save y Load */
+.save-button {
+    background-color: #4A90E2; /* Fondo azul suave */
+    color: #FFFFFF; /* Texto blanco */
+    border: none; /* Sin borde */
+    padding: 8px 16px; /* Espaciado interno */
+    cursor: pointer; /* Cambia el cursor al pasar el mouse */
+    margin-right: 10px; /* Espacio derecho entre botones */
+    border-radius: 5px; /* Bordes redondeados */
+}
+
+.save-button:hover {
+    background-color: #357ABD; /* Azul más oscuro al pasar el mouse */
+}
+
+/* Estilos para el botón Save y Load */
+.load-button {
+    background-color: #4A90E2; /* Fondo azul suave */
+    color: #FFFFFF; /* Texto blanco */
+    border: none; /* Sin borde */
+    padding: 8px 16px; /* Espaciado interno */
+    cursor: pointer; /* Cambia el cursor al pasar el mouse */
+    margin-right: 10px; /* Espacio derecho entre botones */
+    border-radius: 5px; /* Bordes redondeados */
+}
+
+.load-button:hover {
+    background-color: #357ABD; /* Azul más oscuro al pasar el mouse */
 }
