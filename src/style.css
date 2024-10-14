@@ -1,3 +1,4 @@
+/* Estilos generales para el documento */
 html,
 body {
     margin: 0;
@@ -5,79 +6,132 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #aaa;
+    background-color: #aaa; /* Color de fondo de la página */
 }
 
+/* Barra superior que contiene el botón "Open file" y el título */
+#top-bar {
+    padding: 5px; /* Espacio interno reducido */
+    background-color: #f1f1f1; /* Fondo de la barra superior */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Sombra debajo de la barra */
+    display: flex; /* Flexbox para alinear el contenido */
+    align-items: center; /* Centra el contenido verticalmente */
+    position: relative; /* Posiciona el contenido relativo a esta barra */
+    height: 30px; /* Reduce la altura de la barra */
+    z-index: 10; /* Asegura que la barra esté sobre el contenido */
+}
+
+/* Título centrado dentro de la barra superior */
+#app-title {
+
+    position: absolute; /* Posiciona el título en relación a la barra superior */
+    left: 50%; /* Centra el título horizontalmente */
+    transform: translateX(-50%); /* Ajusta el título para que esté centrado exactamente */
+    margin: 0; /* Elimina márgenes por defecto */
+    font-size: 25px; /* Ajusta el tamaño de fuente para mayor visibilidad */
+    font-weight: bold; /* Hace el texto del título más grueso */
+    color: #000000; /* Color del texto */
+}
+
+/* Ajuste del contenedor principal para empezar justo debajo de la barra superior */
 .container {
     display: flex;
-    justify-content: center;
-    height: 100%;
+    height: calc(100% - 30px); /* Resta la altura de la top-bar para que el contenido comience debajo */
+    margin-top: 0; /* Elimina el margen superior */
 }
 
+/* Estilos para el canvas, ocupa el área central */
 canvas {
-    height: 100%;
-    width: 100%;
+    height: 100%; /* Asegura que el canvas ocupe toda la altura */
+    width: 100%; /* Asegura que el canvas ocupe todo el ancho disponible */
 }
 
+/* Clase para organizar elementos en una fila */
 .row {
-    display: flex;
-    flex-direction: row;
+    display: flex; /* Flexbox para alineación en fila */
+    flex-direction: row; /* Alinea en dirección horizontal */
 }
 
+/* Clase para organizar elementos en una columna */
 .column {
-    display: flex;
-    flex-direction: column;
+    display: flex; /* Flexbox para alineación en columna */
+    flex-direction: column; /* Alinea en dirección vertical */
 }
 
+/* Barra derecha que muestra la información del router */
 .right-bar {
-    width: 250px; /* Define el ancho de la barra */
+    width: 250px; /* Ancho fijo de la barra de información */
     height: 100vh; /* Ocupa toda la altura de la ventana */
-    background-color: #f1f1f1; /* Color de fondo para distinguirla */
-    position: absolute; /* Fija la barra */
-    right: 0; /* Se coloca a la derecha */
-    top: 0;
-    box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.2); /* Sombra para que resalte */
-    padding: 20px;
+    background-color: #f1f1f1; /* Fondo para diferenciarla */
+    box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.2); /* Sombra para resaltar */
+    padding: 20px; /* Espacio interno para contenido */
 }
 
-.content {
-    margin-right: 250px; /* Espacio para no sobreponer el contenido */
-    flex: 1;
+.right-bar h2 {
+    text-align: center; /* Centra solo el título */
+    margin: 0; /* Elimina márgenes por defecto */
+    padding-bottom: 15px; /* Espacio inferior para separar el título del contenido */
+    font-size: 22px; /* Ajusta el tamaño de fuente para mayor visibilidad */
+    font-weight: bold; /* Hace el texto del título más grueso */
+    color: #000000; /* Color del texto */
 }
 
-.dropdown-menu {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    padding: 10px;
-    font-size: 14px;
-    z-index: 10; /* Para asegurarse de que el menú esté por encima del canvas */
+.info-content {
+    font-size: 15px; /* Ajusta el tamaño de fuente para mayor visibilidad */
+    font-weight: bold; /* Hace el texto del título más grueso */
+    color: #000000; /* Color del texto */
 }
 
-.sidebar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 10px;
+/* Contenedor del canvas */
+.canvas-container {
+    flex: 1; /* Ocupa el espacio restante en el layout */
+    position: relative; /* Permite posicionar elementos de forma absoluta dentro de él */
+    background-color: #e3e2e1; /* Fondo para distinguirlo */
 }
 
+/* Menú desplegable sobre el canvas */
+#layer-select {
+    position: absolute; /* Se posiciona en relación al contenedor relativo */
+    top: 10px; /* Espacio superior para separarlo del borde */
+    right: 10px; /* Espacio derecho para alinearlo */
+    padding: 5px; /* Espacio interno */
+    font-size: 14px; /* Tamaño de fuente del menú */
+    z-index: 10; /* Asegura que esté encima del canvas */
+    background-color: white; /* Fondo blanco */
+    border: 1px solid #ccc; /* Borde gris claro */
+}
+
+/* Barra lateral izquierda que contiene los botones */
+.leftbar {
+    width: 70px; /* Ancho fijo para la barra lateral */
+    padding: 10px; /* Espacio interno alrededor de los botones */
+    display: flex; /* Flexbox para organizar los botones */
+    flex-direction: column; /* Alinea los botones en una columna */
+    align-items: center; /* Centra los botones horizontalmente */
+    background-color: #f1f1f1; /* Fondo de la barra */
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.2); /* Sombra para resaltar */
+}
+
+/* Estilos para los botones de la barra lateral */
 .icon-button {
-    background-color: #fff;
-    border: none;
-    padding: 10px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    border-radius: 5px;
-    width: 40px;
-    height: 40px;
+    background-color: #fff; /* Fondo blanco del botón */
+    border: none; /* Sin borde */
+    padding: 10px; /* Espacio interno alrededor del icono */
+    margin-bottom: 10px; /* Separación entre botones */
+    cursor: pointer; /* Cambia el cursor a "pointer" al pasar el mouse */
+    border-radius: 5px; /* Bordes redondeados */
+    width: 40px; /* Ancho fijo del botón */
+    height: 40px; /* Alto fijo del botón */
 }
 
+/* Efecto de hover para los botones */
 .icon-button:hover {
-    background-color: #f0f0f0;
+    background-color: #f0f0f0; /* Fondo más claro al pasar el mouse */
 }
 
+/* Imágenes dentro de los botones de la barra lateral */
 .icon-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    width: 100%; /* Ocupa todo el ancho del botón */
+    height: 100%; /* Ocupa todo el alto del botón */
+    object-fit: contain; /* Ajusta la imagen para no distorsionarla */
 }
