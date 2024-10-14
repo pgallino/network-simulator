@@ -1,7 +1,12 @@
 // routerManager.ts
-import { Graphics, Sprite, Texture } from 'pixi.js';
+import { Graphics, Sprite, Texture, FederatedPointerEvent } from 'pixi.js';
 import { getMode, setMode } from './utils';
 import routerImage from './assets/router.svg';  // Cambia a la extensión de la imagen que necesitas (png o svg)
+
+// Extiende Sprite para incluir la propiedad personalizada "dragging"
+interface DraggableSprite extends Sprite {
+    dragging: boolean;
+}
 
 export interface RouterInfo {
     id: number;
@@ -26,23 +31,23 @@ function isNearExistingRouter(x: number, y: number): boolean {
     });
 }
 
-export function addRouter(rect: Graphics, x: number, y: number): RouterInfo {
+export function addRouter(routerLayer: Graphics, connectionLayer: Graphics, x: number, y: number): RouterInfo {
 
     if (isNearExistingRouter(x, y)) {
         console.log("La posición está demasiado cerca de otro router.");
-        return; // Retorna
+        return;
     }
 
     // Crear un elemento de imagen de HTML
     const img = new Image();
-    img.src = routerImage; // Ruta a tu imagen PNG
+    img.src = routerImage; // Ruta a tu imagen PNG o SVG
 
     img.onload = () => {
         // Crear la textura a partir de la imagen cargada
         const routerTexture = Texture.from(img);
 
         // Crear el sprite con la textura de la imagen
-        const sprite = new Sprite(routerTexture);
+        const sprite = new Sprite(routerTexture) as DraggableSprite;
         sprite.width = 40; // Ajusta el tamaño según necesites
         sprite.height = 40;
         sprite.anchor.set(0.5, 0.5); // Centro del sprite
@@ -59,19 +64,28 @@ export function addRouter(rect: Graphics, x: number, y: number): RouterInfo {
         };
 
         routers.push(routerInfo);
-        rect.addChild(sprite);
+        routerLayer.addChild(sprite);
         sprite.eventMode = 'static';
 
-        // Configura el evento de clic en el sprite
-        sprite.on('click', (e) => handleRouterClick(e, routerInfo, rect));
+        // Configurar el evento de clic en el sprite
+        sprite.on('click', (e) => handleRouterClick(e, routerInfo, routerLayer, connectionLayer));
 
-        return routerInfo
+
+        // Habilitar el arrastre y configurar los manejadores
+        sprite.interactive = true;
+        sprite.dragging = false; // Inicializa la propiedad "dragging"
+
+        sprite.on('pointerdown', handlePointerDown(sprite));
+        sprite.on('pointerup', handlePointerUp(sprite, connectionLayer));
+        sprite.on('pointerupoutside', handlePointerUpOutside(sprite, connectionLayer));
+        sprite.on('pointermove', handlePointerMove(sprite, routerInfo, connectionLayer));
+
+        return routerInfo;
     };
 
     img.onerror = () => {
         console.error("No se pudo cargar la imagen del router.");
     };
-
 }
 
 export function showRouterInfo(routerInfo: RouterInfo) {
@@ -94,7 +108,7 @@ export function showRouterInfo(routerInfo: RouterInfo) {
     );
 }
 
-function handleRouterClick(e: MouseEvent, router: RouterInfo, rect: Graphics) {
+function handleRouterClick(e: MouseEvent, router: RouterInfo, routerLayer: Graphics, connectionLayer: Graphics) {
     console.log("clicked on circle", e);
     if (getMode() === "connection") {
         if (!firstRouter) {
@@ -105,7 +119,7 @@ function handleRouterClick(e: MouseEvent, router: RouterInfo, rect: Graphics) {
             // Verifica si los routers son distintos antes de intentar conectar
             if (firstRouter.id !== router.id) {
                 // Dibuja una línea entre firstRouter y el router actual
-                drawConnection(rect, firstRouter, router);
+                drawConnection(connectionLayer, firstRouter, router);
                 // Incrementar el número de conexiones en ambos routers
                 firstRouter.connections += 1;
                 router.connections += 1;
@@ -123,8 +137,7 @@ function handleRouterClick(e: MouseEvent, router: RouterInfo, rect: Graphics) {
 }
 
 
-export function drawConnection(rect: Graphics, router1: RouterInfo, router2: RouterInfo) {
-    const line = new Graphics();
+export function drawConnection(layer: Graphics, router1: RouterInfo, router2: RouterInfo) {
 
     // Calcular el ángulo entre los dos routers
     const dx = router2.x - router1.x;
@@ -137,10 +150,10 @@ export function drawConnection(rect: Graphics, router1: RouterInfo, router2: Rou
 
     // Dibuja la línea desde el borde del ícono
     
-    line.moveTo(router1.x + offsetX, router1.y + offsetY);
-    line.lineTo(router2.x - offsetX, router2.y - offsetY);
-    line.stroke({ width: 2, color:  0x800000 });
-    rect.addChildAt(line, 0);
+    layer.moveTo(router1.x + offsetX, router1.y + offsetY);
+    layer.lineTo(router2.x - offsetX, router2.y - offsetY);
+    layer.stroke({ width: 2, color:  0x800000 });
+
 }
 
 export function saveRouters() {
@@ -154,19 +167,19 @@ export function saveRouters() {
     URL.revokeObjectURL(url);
 }
 
-export function loadRouters(data: string, rect: Graphics) {
+export function loadRouters(data: string, routerLayer: Graphics, connectionLayer: Graphics) {
     const loadedRouters: RouterInfo[] = JSON.parse(data);
 
     loadedRouters.forEach(routerInfo => {
         setMode("router")
-        let router = addRouter(rect, routerInfo.x, routerInfo.y);
+        let router = addRouter(routerLayer, connectionLayer, routerInfo.x, routerInfo.y);
 
         // Redibuja conexiones si existen
         routerInfo.connectedTo.forEach(connectedId => {
             const targetRouter = loadedRouters.find(r => r.id === connectedId);
             if (targetRouter) {
                 setMode("connection")
-                drawConnection(rect, routerInfo, targetRouter);
+                drawConnection(connectionLayer, routerInfo, targetRouter);
                 router.connections += 1
                 router.connectedTo.push(targetRouter.id)
             }
@@ -175,4 +188,63 @@ export function loadRouters(data: string, rect: Graphics) {
     setMode("navigate")
 }
 
+function updateConnections(connectionLayer: Graphics) {
+    // Eliminar todas las conexiones actuales
+    connectionLayer.clear();
 
+    // Redibujar las conexiones para cada router en `routers`
+    routers.forEach(router => {
+        router.connectedTo.forEach(connectedId => {
+            const targetRouter = routers.find(r => r.id === connectedId);
+            if (targetRouter) {
+                drawConnection(connectionLayer, router, targetRouter);
+            }
+        });
+    });
+}
+
+
+function handlePointerDown(sprite: DraggableSprite) {
+    return (event: FederatedPointerEvent) => {
+        if (getMode() === "navigate") {
+            sprite.alpha = 0.8; // Cambia la opacidad durante el arrastre
+            sprite.dragging = true;
+        }
+    };
+}
+
+function handlePointerUp(sprite: DraggableSprite, connectionLayer: Graphics) {
+    return () => {
+        sprite.alpha = 1; // Restaura la opacidad
+        sprite.dragging = false;
+
+        // Llama a updateConnections al soltar el sprite
+        // updateConnections(connectionLayer);
+    };
+}
+
+function handlePointerUpOutside(sprite: DraggableSprite, connectionLayer: Graphics) {
+    return () => {
+        sprite.alpha = 1;
+        sprite.dragging = false;
+
+        // Actualizar las líneas de conexión
+        // updateConnections(connectionLayer);
+    };
+}
+
+function handlePointerMove(sprite: DraggableSprite, routerInfo: RouterInfo, connectionLayer: Graphics) {
+    return (event: FederatedPointerEvent) => {
+        if (getMode() === "navigate" && sprite.dragging) {
+            const newPosition = event.global;
+            sprite.x = newPosition.x;
+            sprite.y = newPosition.y;
+            
+            // Actualizar la posición en routerInfo
+            routerInfo.x = sprite.x;
+            routerInfo.y = sprite.y;
+
+            updateConnections(connectionLayer);
+        }
+    };
+}

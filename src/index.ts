@@ -1,5 +1,4 @@
 import { Application, Sprite, Assets, Graphics, GraphicsContext, FederatedPointerEvent, Texture } from 'pixi.js';
-import Bunny from './assets/bunny.png';
 import RouterSvg from './assets/router.svg';
 import ConnectionSvg from './assets/connection.svg';
 import Click from './assets/click.png'
@@ -27,7 +26,7 @@ import { addRouter, saveRouters, loadRouters } from './routerManager';
     
         reader.onload = (readerEvent) => {
             const data = readerEvent.target.result as string;
-            loadRouters(data, rect);
+            loadRouters(data, routerLayer, connectionLayer);
         };
     };
     
@@ -36,7 +35,7 @@ import { addRouter, saveRouters, loadRouters } from './routerManager';
         saveRouters();
     };
 
-    const leftBar = document.getElementById("left-bar");
+
     const canvas = document.getElementById("canvas");
     const infoContent = document.getElementById("info-content");
     const layerSelect = document.getElementById("layer-select") as HTMLSelectElement | null;
@@ -65,26 +64,33 @@ import { addRouter, saveRouters, loadRouters } from './routerManager';
     canvas.replaceWith(app.canvas);
     app.canvas.style.float = "left";
 
-    let rect = new Graphics()
-        .rect(0, 0, app.renderer.width, app.renderer.height)
-        .fill(0xe3e2e1);
+    const routerLayer = new Graphics();
+    app.stage.addChild(routerLayer);
 
-    const resizeRect = () => {
-        rect.width = app.renderer.width;
-        rect.height = app.renderer.height;
-    }
+    // Crear la capa de conexiones (connectionLayer)
+    const connectionLayer = new Graphics();
+    app.stage.addChild(connectionLayer);
 
-    app.stage.addChild(rect);
+    // Crear la capa de routers (routerLayer)
+
+    // Ajustar el tamaño de las capas en función del tamaño de la aplicación
+    const resizeLayers = () => {
+        routerLayer.clear();
+        routerLayer.rect(0, 0, app.renderer.width, app.renderer.height)
+        routerLayer.fill(0xe3e2e1);
+    };
+
+    resizeLayers();
 
     // AÑADIR ROUTER
-    rect.on('click', (e) => {
+    routerLayer.on('click', (e) => {
         if (getMode() === "router") {
-            addRouter(rect, e.globalX, e.globalY);
+            addRouter(routerLayer, connectionLayer, e.globalX, e.globalY);
         }
     });
 
 
-    rect.eventMode = 'static';
+    routerLayer.eventMode = 'static';
 
     if (layerSelect) {
         layerSelect.addEventListener('change', (e) => {
