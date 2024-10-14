@@ -101,8 +101,8 @@ canvas {
 }
 
 /* Barra lateral izquierda que contiene los botones */
-.leftbar {
-    width: 70px; /* Ancho fijo para la barra lateral */
+.left-bar {
+    width: 50px; /* Ancho fijo para la barra lateral */
     padding: 10px; /* Espacio interno alrededor de los botones */
     display: flex; /* Flexbox para organizar los botones */
     flex-direction: column; /* Alinea los botones en una columna */

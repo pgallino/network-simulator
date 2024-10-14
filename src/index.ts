@@ -8,10 +8,10 @@ import { setMode, getMode } from './utils';
 import { addRouter, saveRouters, loadRouters } from './routerManager';
 
 (async () => {
-    const leftBarWidth = 50;
+
     const load_button = document.getElementById("load-button");
     const save_Button = document.getElementById("save-button");
-    let fileContent = null;
+
 
     const input = document.createElement('input');
     input.type = 'file';
@@ -40,7 +40,6 @@ import { addRouter, saveRouters, loadRouters } from './routerManager';
     const canvas = document.getElementById("canvas");
     const infoContent = document.getElementById("info-content");
     const layerSelect = document.getElementById("layer-select") as HTMLSelectElement | null;
-    leftBar.style.width = `${leftBarWidth}px`;
 
     // BOTONES DE SELECCIÓN DE MODO
 
