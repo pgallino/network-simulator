@@ -62,47 +62,51 @@ export function handleRouterClick(e: MouseEvent, router: RouterNode, connectionL
 }
 
 
-export function handlePointerDown(sprite: DraggableSprite) {
+export function handlePointerDown(sprite: DraggableSprite, routerNode: RouterNode, connectionLayer: Graphics, networkGraph: NetworkGraph) {
+
+    let offsetX = 0;
+    let offsetY = 0;
+
     return (event: FederatedPointerEvent) => {
         if (getMode() === "navigate") {
             sprite.alpha = 0.5; // Cambia la opacidad durante el arrastre
             sprite.dragging = true;
+
+            // Calcula el desplazamiento entre el mouse y el sprite al iniciar el arrastre
+            offsetX = event.clientX - sprite.getBounds().x;
+            offsetY = event.clientY - sprite.getBounds().y;
+
+            // Eventos globales para permitir arrastrar fuera del sprite
+            document.addEventListener('pointermove', globalPointerMove);
+            document.addEventListener('pointerup', globalPointerUp);
         }
-    };
-}
 
-export function handlePointerUp(sprite: DraggableSprite, connectionLayer: Graphics) {
-    return () => {
-        sprite.alpha = 1; // Restaura la opacidad
-        sprite.dragging = false;
+        // Movimiento global del puntero
+        function globalPointerMove(event: PointerEvent) {
+            if (sprite.dragging) {
 
-        // Llama a updateConnections al soltar el sprite
-        // updateConnections(connectionLayer);
-    };
-}
+                // Calcula la nueva posición usando el desplazamiento
+                const newPositionX = event.clientX - offsetX;
+                const newPositionY = event.clientY - offsetY;
+                sprite.x = newPositionX;
+                sprite.y = newPositionY;
 
-export function handlePointerUpOutside(sprite: DraggableSprite, connectionLayer: Graphics) {
-    return () => {
-        sprite.alpha = 1;
-        sprite.dragging = false;
+                // Actualiza las coordenadas en routerNode
+                routerNode.x = sprite.x;
+                routerNode.y = sprite.y;
 
-        // Actualizar las líneas de conexión
-        // updateConnections(connectionLayer);
-    };
-}
+                updateConnections(connectionLayer, networkGraph);
+            }
+        }
 
-export function handlePointerMove(sprite: DraggableSprite, routerNode: RouterNode, connectionLayer: Graphics, networkGraph: NetworkGraph) {
-    return (event: FederatedPointerEvent) => {
-        if (getMode() === "navigate" && sprite.dragging) {
-            const newPosition = event.global;
-            sprite.x = newPosition.x;
-            sprite.y = newPosition.y;
-            
-            // Actualizar la posición en routerNode
-            routerNode.x = sprite.x;
-            routerNode.y = sprite.y;
+        // Soltar el puntero para finalizar el arrastre
+        function globalPointerUp() {
+            sprite.alpha = 1; // Restaurar opacidad
+            sprite.dragging = false;
 
-            updateConnections(connectionLayer, networkGraph);
+            // Remover eventos globales al soltar
+            document.removeEventListener('pointermove', globalPointerMove);
+            document.removeEventListener('pointerup', globalPointerUp);
         }
     };
 }

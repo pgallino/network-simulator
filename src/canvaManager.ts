@@ -3,7 +3,7 @@ import { NetworkGraph, RouterNode} from './networkgraph';
 import { Graphics, Sprite, Texture, FederatedPointerEvent } from 'pixi.js';
 import { clearNodeLayer, drawConnection, getMode } from './utils';
 import routerImage from './assets/router.svg';
-import { handlePointerDown, handlePointerMove, handlePointerUp, handlePointerUpOutside, handleRouterClick } from './routerManager';
+import { handlePointerDown, handleRouterClick } from './routerManager';
 
 // Extiende Sprite para incluir la propiedad personalizada "dragging"
 interface DraggableSprite extends Sprite {
@@ -78,10 +78,7 @@ function addRouterSprite(routerInfo: RouterNode, nodeLayer: Graphics, connection
 
         // Configuración de eventos de interacción
         sprite.on('click', (e) => handleRouterClick(e, routerInfo, connectionLayer, networkGraph));
-        sprite.on('pointerdown', handlePointerDown(sprite));
-        sprite.on('pointerup', handlePointerUp(sprite, connectionLayer));
-        sprite.on('pointerupoutside', handlePointerUpOutside(sprite, connectionLayer));
-        sprite.on('pointermove', handlePointerMove(sprite, routerInfo, connectionLayer, networkGraph));
+        sprite.on('pointerdown', handlePointerDown(sprite, routerInfo, connectionLayer, networkGraph));
     } else {
         console.error("La textura del router no está disponible.");
     }
