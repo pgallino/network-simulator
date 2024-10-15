@@ -13,6 +13,10 @@ export interface RouterNode extends GraphNode {
     type: 'router';
 }
 
+export interface PCNode extends GraphNode {
+    type: 'pc';
+}
+
 
 export class NetworkGraph {
     private adjacencyList: Map<number, GraphNode>;

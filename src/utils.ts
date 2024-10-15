@@ -2,7 +2,7 @@ import { Graphics } from "pixi.js";
 import { GraphNode, NetworkGraph } from "./networkgraph";
 
 // modeManager.js
-export type Mode = "navigate" | "router" | "connection";
+export type Mode = "navigate" | "router" | "pc" | "connection";
 
 export let mode: Mode = "navigate"; // El modo por defecto será "navegar"
 
@@ -27,10 +27,23 @@ export function drawConnection(layer: Graphics, node1: GraphNode, node2: GraphNo
     const offsetY = (40 / 2) * Math.sin(angle); // Ajuste usando la mitad del alto del ícono
 
     // Dibuja la línea desde el borde del ícono
+
+    // Determinar el color de la conexión según los tipos de nodo
+    let connectionColor;
+    if (node1.type === 'pc' && node2.type === 'router' || node1.type === 'router' && node2.type === 'pc') {
+        connectionColor = 0xFFA500; // Verde para conexiones entre pc y router
+    } else if (node1.type === 'router' && node2.type === 'router') {
+        connectionColor = 0x800000; // Bordo para conexiones entre routers
+    } else if (node1.type === 'pc' && node2.type === 'pc') {
+        connectionColor = 0x0000FF; // Azul para conexiones entre pcs
+    } else {
+        console.warn('Conexión desconocida entre tipos de nodo:', node1.type, node2.type);
+        return;
+    }
     
     layer.moveTo(node1.x + offsetX, node1.y + offsetY);
     layer.lineTo(node2.x - offsetX, node2.y - offsetY);
-    layer.stroke({ width: 2, color:  0x800000 });
+    layer.stroke({ width: 2, color:  connectionColor });
 
 }
 

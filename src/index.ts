@@ -1,7 +1,8 @@
 import { Application, Sprite, Assets, Graphics, GraphicsContext, FederatedPointerEvent, Texture } from 'pixi.js';
 import RouterSvg from './assets/router.svg';
 import ConnectionSvg from './assets/connection.svg';
-import Click from './assets/click.png'
+import Click from './assets/click.svg'
+import PC from './assets/computer.svg'
 import './style.css';
 import { setMode, getMode } from './utils';
 import { clickHandler } from './canvaManager';
@@ -21,21 +22,6 @@ export function clearNodeLayer(): void {
     if (infoContent) {
         infoContent.innerHTML = "<p>No node selected</p>"; // Muestra un estado inicial
     }
-
-    // BOTONES DE SELECCIÓN DE MODO
-
-    // Asignar imágenes dinámicamente a los botones
-    const navigateButtonImg = document.getElementById("navigate-button-img") as HTMLImageElement;
-    const routerButtonImg = document.getElementById("router-button-img") as HTMLImageElement;
-    const connectionButtonImg = document.getElementById("connection-button-img") as HTMLImageElement;
-
-    if (navigateButtonImg) navigateButtonImg.src = Click;
-    if (routerButtonImg) routerButtonImg.src = RouterSvg;
-    if (connectionButtonImg) connectionButtonImg.src = ConnectionSvg;
-    
-    const navigateButton = document.getElementById("navigate-button");
-    const routerButton = document.getElementById("router-button");
-    const connectionButton = document.getElementById("connection-button");
 
 
     // PIXI.js setup
@@ -86,7 +72,26 @@ export function clearNodeLayer(): void {
     }
 
 
+    // ================================================ BOTONES DE SELECCION DE MODO =================================================
+
     // BOTONES DE SELECCIÓN DE MODO
+
+    // Asignar imágenes dinámicamente a los botones
+    const navigateButtonImg = document.getElementById("navigate-button-img") as HTMLImageElement;
+    const routerButtonImg = document.getElementById("router-button-img") as HTMLImageElement;
+    const pcButtonImg = document.getElementById("pc-button-img") as HTMLImageElement;
+    const connectionButtonImg = document.getElementById("connection-button-img") as HTMLImageElement;
+
+    if (navigateButtonImg) navigateButtonImg.src = Click;
+    if (routerButtonImg) routerButtonImg.src = RouterSvg;
+    if (pcButtonImg) pcButtonImg.src = PC;
+    if (connectionButtonImg) connectionButtonImg.src = ConnectionSvg;
+    
+    const navigateButton = document.getElementById("navigate-button");
+    const routerButton = document.getElementById("router-button");
+    const connectionButton = document.getElementById("connection-button");
+    const pcButton = document.getElementById("pc-button");
+    
     if (navigateButton) {
         navigateButton.onclick = () => {
             setMode("navigate");
@@ -100,6 +105,13 @@ export function clearNodeLayer(): void {
             console.log("Modo: Router");
         };
     }
+
+    if (pcButton) {
+        pcButton.onclick = () => {
+            setMode("pc");
+            console.log("Modo: PC");
+        };
+    }
     
     if (connectionButton) {
         connectionButton.onclick = () => {
@@ -107,6 +119,8 @@ export function clearNodeLayer(): void {
             console.log("Modo: Conexión");
         };
     }
+
+    // ================================================ BOTONES DE GUARDADO Y CARGADO =================================================
 
     const load_button = document.getElementById("load-button");
     const save_Button = document.getElementById("save-button");
