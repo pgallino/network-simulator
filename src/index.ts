@@ -4,14 +4,23 @@ import ConnectionSvg from './assets/connection.svg';
 import Click from './assets/click.png'
 import './style.css';
 import { setMode, getMode } from './utils';
-import { addRouter, saveRouters, loadRouters } from './routerManager';
+import { clickHandler } from './canvaManager';
+import { saveGraph, loadGraph } from './canvaManager';
 
+
+export function clearNodeLayer(): void {
+
+}
 (async () => {
 
 
     const canvas = document.getElementById("canvas");
     const infoContent = document.getElementById("info-content");
     const layerSelect = document.getElementById("layer-select") as HTMLSelectElement | null;
+
+    if (infoContent) {
+        infoContent.innerHTML = "<p>No node selected</p>"; // Muestra un estado inicial
+    }
 
     // BOTONES DE SELECCIÓN DE MODO
 
@@ -37,33 +46,32 @@ import { addRouter, saveRouters, loadRouters } from './routerManager';
     canvas.replaceWith(app.canvas);
     app.canvas.style.float = "left";
 
-    const routerLayer = new Graphics();
-    app.stage.addChild(routerLayer);
+
+    const nodeLayer = new Graphics();
+    app.stage.addChild(nodeLayer);
 
     // Crear la capa de conexiones (connectionLayer)
     const connectionLayer = new Graphics();
     app.stage.addChild(connectionLayer);
 
-    // Crear la capa de routers (routerLayer)
+    // Crear la capa de routers (nodeLayer)
 
     // Ajustar el tamaño de las capas en función del tamaño de la aplicación
-    const resizeLayers = () => {
-        routerLayer.clear();
-        routerLayer.rect(0, 0, app.renderer.width, app.renderer.height)
-        routerLayer.fill(0xe3e2e1);
+    const resizeNodeLayer = () => {
+        nodeLayer.clear();
+        nodeLayer.rect(0, 0, app.renderer.width, app.renderer.height)
+        nodeLayer.fill(0xe3e2e1);
     };
 
-    resizeLayers();
+    resizeNodeLayer();
 
     // AÑADIR ROUTER
-    routerLayer.on('click', (e) => {
-        if (getMode() === "router") {
-            addRouter(routerLayer, connectionLayer, e.globalX, e.globalY);
-        }
+    nodeLayer.on('click', (e) => {
+        clickHandler(nodeLayer, connectionLayer, e.globalX, e.globalY);
     });
 
 
-    routerLayer.eventMode = 'static';
+    nodeLayer.eventMode = 'static';
 
     if (layerSelect) {
         layerSelect.addEventListener('change', (e) => {
@@ -117,14 +125,17 @@ import { addRouter, saveRouters, loadRouters } from './routerManager';
         reader.readAsText(file); // Cambia a readAsText para archivos JSON de texto
     
         reader.onload = (readerEvent) => {
-            const data = readerEvent.target.result as string;
-            loadRouters(data, routerLayer, connectionLayer);
+            const jsonData = readerEvent.target.result as string;
+            if (infoContent) {
+                infoContent.innerHTML = "<p>No node selected</p>"; // Muestra un estado inicial
+            }
+            loadGraph(jsonData, nodeLayer, connectionLayer, app.renderer.width, app.renderer.height);
         };
     };
     
 
     save_Button.onclick = () => {
-        saveRouters();
+        saveGraph();
     };
 
 })();
