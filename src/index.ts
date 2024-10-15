@@ -8,33 +8,6 @@ import { addRouter, saveRouters, loadRouters } from './routerManager';
 
 (async () => {
 
-    const load_button = document.getElementById("load-button");
-    const save_Button = document.getElementById("save-button");
-
-
-    const input = document.createElement('input');
-    input.type = 'file';
-
-    load_button.onclick = () => {
-        input.click();
-    };
-
-    input.onchange = () => {
-        const file = input.files[0];
-        const reader = new FileReader();
-        reader.readAsText(file); // Cambia a readAsText para archivos JSON de texto
-    
-        reader.onload = (readerEvent) => {
-            const data = readerEvent.target.result as string;
-            loadRouters(data, routerLayer, connectionLayer);
-        };
-    };
-    
-
-    save_Button.onclick = () => {
-        saveRouters();
-    };
-
 
     const canvas = document.getElementById("canvas");
     const infoContent = document.getElementById("info-content");
@@ -126,5 +99,32 @@ import { addRouter, saveRouters, loadRouters } from './routerManager';
             console.log("Modo: Conexión");
         };
     }
+
+    const load_button = document.getElementById("load-button");
+    const save_Button = document.getElementById("save-button");
+
+
+    const input = document.createElement('input');
+    input.type = 'file';
+
+    load_button.onclick = () => {
+        input.click();
+    };
+
+    input.onchange = () => {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.readAsText(file); // Cambia a readAsText para archivos JSON de texto
+    
+        reader.onload = (readerEvent) => {
+            const data = readerEvent.target.result as string;
+            loadRouters(data, routerLayer, connectionLayer);
+        };
+    };
+    
+
+    save_Button.onclick = () => {
+        saveRouters();
+    };
 
 })();

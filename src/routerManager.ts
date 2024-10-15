@@ -31,61 +31,55 @@ function isNearExistingRouter(x: number, y: number): boolean {
     });
 }
 
-export function addRouter(routerLayer: Graphics, connectionLayer: Graphics, x: number, y: number): RouterInfo {
-
+export function addRouter(routerLayer: Graphics, connectionLayer: Graphics, x: number, y: number): RouterInfo | null {
     if (isNearExistingRouter(x, y)) {
         console.log("La posición está demasiado cerca de otro router.");
-        return;
+        return null;
     }
 
-    // Crear un elemento de imagen de HTML
+    // Crear la estructura del router
+    let routerInfo: RouterInfo = {
+        id: routers.length + 1,
+        x: x,
+        y: y,
+        status: 'active',
+        connections: 0,
+        connectedTo: []
+    };
+
+    // Añadir el router a la lista
+    routers.push(routerInfo);
+
+    // Configurar el sprite de imagen de router
     const img = new Image();
-    img.src = routerImage; // Ruta a tu imagen PNG o SVG
+    img.src = routerImage;
 
     img.onload = () => {
-        // Crear la textura a partir de la imagen cargada
         const routerTexture = Texture.from(img);
-
-        // Crear el sprite con la textura de la imagen
         const sprite = new Sprite(routerTexture) as DraggableSprite;
-        sprite.width = 40; // Ajusta el tamaño según necesites
+        sprite.width = 40;
         sprite.height = 40;
-        sprite.anchor.set(0.5, 0.5); // Centro del sprite
+        sprite.anchor.set(0.5, 0.5);
         sprite.x = x;
         sprite.y = y;
 
-        let routerInfo: RouterInfo = {
-            id: routers.length + 1,
-            x: sprite.x,
-            y: sprite.y,
-            status: 'active',
-            connections: 0,
-            connectedTo: []
-        };
-
-        routers.push(routerInfo);
         routerLayer.addChild(sprite);
         sprite.eventMode = 'static';
-
-        // Configurar el evento de clic en el sprite
-        sprite.on('click', (e) => handleRouterClick(e, routerInfo, routerLayer, connectionLayer));
-
-
-        // Habilitar el arrastre y configurar los manejadores
         sprite.interactive = true;
-        sprite.dragging = false; // Inicializa la propiedad "dragging"
+        sprite.dragging = false;
 
+        sprite.on('click', (e) => handleRouterClick(e, routerInfo, routerLayer, connectionLayer));
         sprite.on('pointerdown', handlePointerDown(sprite));
         sprite.on('pointerup', handlePointerUp(sprite, connectionLayer));
         sprite.on('pointerupoutside', handlePointerUpOutside(sprite, connectionLayer));
         sprite.on('pointermove', handlePointerMove(sprite, routerInfo, connectionLayer));
-
-        return routerInfo;
     };
 
     img.onerror = () => {
         console.error("No se pudo cargar la imagen del router.");
     };
+
+    return routerInfo;
 }
 
 export function showRouterInfo(routerInfo: RouterInfo) {
@@ -167,26 +161,45 @@ export function saveRouters() {
     URL.revokeObjectURL(url);
 }
 
-export function loadRouters(data: string, routerLayer: Graphics, connectionLayer: Graphics) {
-    const loadedRouters: RouterInfo[] = JSON.parse(data);
+export function loadRouters(data: string | null, routerLayer: Graphics, connectionLayer: Graphics) {
+    // Verifica si los datos existen y no están vacíos
+    if (!data) {
+        console.warn("No se cargaron datos; archivo vacío o carga cancelada.");
+        return;
+    }
 
+    let loadedRouters: RouterInfo[];
+
+    // Intenta parsear los datos y manejar errores si no es JSON válido
+    try {
+        loadedRouters = JSON.parse(data);
+    } catch (error) {
+        console.error("Error al parsear los datos del archivo:", error);
+        return;
+    }
+
+    // Procesa cada router en los datos cargados
     loadedRouters.forEach(routerInfo => {
-        setMode("router")
-        let router = addRouter(routerLayer, connectionLayer, routerInfo.x, routerInfo.y);
+        setMode("router");
+        const router = addRouter(routerLayer, connectionLayer, routerInfo.x, routerInfo.y);
 
-        // Redibuja conexiones si existen
-        routerInfo.connectedTo.forEach(connectedId => {
-            const targetRouter = loadedRouters.find(r => r.id === connectedId);
-            if (targetRouter) {
-                setMode("connection")
-                drawConnection(connectionLayer, routerInfo, targetRouter);
-                router.connections += 1
-                router.connectedTo.push(targetRouter.id)
-            }
-        });
+        // Solo si `router` es válido, redibuja las conexiones
+        if (router) {
+            routerInfo.connectedTo.forEach(connectedId => {
+                const targetRouter = loadedRouters.find(r => r.id === connectedId);
+                if (targetRouter) {
+                    setMode("connection");
+                    drawConnection(connectionLayer, routerInfo, targetRouter);
+                    router.connections += 1;
+                    router.connectedTo.push(targetRouter.id);
+                }
+            });
+        }
     });
-    setMode("navigate")
+
+    setMode("navigate");
 }
+
 
 function updateConnections(connectionLayer: Graphics) {
     // Eliminar todas las conexiones actuales
